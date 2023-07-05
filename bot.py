@@ -1,15 +1,18 @@
 import discord
 import os
 import modulefinder
+import document_downloader
 from dotenv import load_dotenv
 
 load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
 
-resume = []
+resume = [None]
+index = None
 
 def run_discord_bot():
+    print('loop')
     TOKEN = os.getenv('BOT_TOKEN')
     client = discord.Client(intents=intents)
 
@@ -49,6 +52,8 @@ def run_discord_bot():
         #     instructions = user_message[6:]
         #     await rewrite(message, instructions)
 
+
+
     client.run(TOKEN)
 
 async def load_resume(message, user_message, attatchments):
@@ -70,10 +75,13 @@ async def load_resume(message, user_message, attatchments):
         if (document.content_type != 'application/pdf'):
             await message.channel.send('I can only read pdfs...')
         else:
-            pass
+            document_downloader.download_pdf(document_url)
+
             
+    
 
-
+            
+            
 # async def send_message(message, user_message, is_private):
 #     try:
 #         response = responses.handle_response(user_message)
