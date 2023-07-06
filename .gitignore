@@ -1,4 +1,5 @@
 .env
-/venv
-/resumes/
 /resources/
+/env/
+separate_resumes.zip
+urls.txt
