@@ -3,11 +3,12 @@ import os
 import PyPDF2
 
 pdfiles = []
-file_name = 'all_resources.pdf'
-for filename in os.listdir('./resources'):
+folder_path = './separate_resumes/tutorials'
+file_name = 'tutorials.pdf'
+for filename in os.listdir(folder_path):
         if filename.endswith('.pdf'):
                 if filename != file_name:
-                        pdfiles.append(os.path.join('./resources', filename))
+                        pdfiles.append(os.path.join(folder_path, filename))
                         
 pdfiles.sort(key = str.lower)
 

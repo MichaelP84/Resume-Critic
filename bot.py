@@ -2,7 +2,7 @@ import discord
 import os
 from dotenv import load_dotenv
 import requests
-
+import openai_model
 
 load_dotenv()
 intents = discord.Intents.default()
@@ -10,6 +10,8 @@ intents.message_content = True
 
 resume = [None]
 index = None
+model = openai_model.Model()
+loaded_resume = False
 
 def run_discord_bot():
     print('loop')
@@ -19,6 +21,8 @@ def run_discord_bot():
     @client.event
     async def on_ready():
         print(f'{client.user} is now running')
+
+        
     
     @client.event
     async def on_message(message):
@@ -37,15 +41,17 @@ def run_discord_bot():
             user_message = user_message[5:]
             await load_resume(message, user_message, attatchments)
 
-        # # general feedback [!general_feeback]
-        # if user_message[:6] == '!general_feeback ':
+        # # general feedback [!general_feedback]
+        # if user_message[:17] == '!general_feedback':
         #     user_message = user_message[17:]
         #     await general_response(message, user_message)
 
-        # # specific feedback [!specific_feedback "section(s)"]
-        # if user_message[:6] == '!specific_feedback ':
-        #     user_message = user_message[19:]
-        #     await specifc_response(message, user_message)
+        # specific feedback !specific_feedback <section>/<type>
+        # type = 'personal project', 'internship', 'award', etc..
+        if user_message[:10] == '!specific ':
+            user_message = user_message[10:]
+            print(user_message)
+            await specific_response(message, user_message)
 
         # # rewriting points [!rewrite "instructions"]
         # if user_message[:6] == '!rewrite ':
@@ -53,6 +59,16 @@ def run_discord_bot():
         #     await rewrite(message, instructions)
 
     client.run(TOKEN)
+
+# async def general_response(message, user_message):
+#     await message.channel.send(await model.general_feedback())
+
+async def specific_response(message, user_message):
+    user_message = user_message.split('/')
+    if (len(user_message) != 2):
+        await message.channel.send('formatted request wrong, try !specific_feedback <section> <type>')
+    else:
+        await message.channel.send(await model.specific_feedback(user_message[0], user_message[1]))
 
 async def load_resume(message, user_message, attatchments):
     print(attatchments)
@@ -73,9 +89,12 @@ async def load_resume(message, user_message, attatchments):
         if (document.content_type != 'application/pdf'):
             await message.channel.send('I can only read pdfs...')
         else:
-            download_pdf(document_url)
+            print('downloading resume...')
+            await download_pdf(document_url)
+            loaded_resume = True
+            await model.create_router_agent()
 
-def download_pdf(url):
+async def download_pdf(url):
     response = requests.get(url, allow_redirects=True)
 
     with open("resumes/resume.pdf",'wb') as f:
